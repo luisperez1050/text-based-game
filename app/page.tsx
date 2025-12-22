@@ -11,6 +11,34 @@ const pokemonData = pokemonDataRaw as Pokemon[];
 export default function Home() {
   const [mode, setMode] = useState<'menu' | 'local' | 'online'>('menu');
   
+  // Type advantage mapping (simplified)
+  const typeAdvantage: Record<string, string[]> = {
+    fire: ['grass','ice','bug','steel'],
+    water: ['fire','ground','rock'],
+    grass: ['water','ground','rock'],
+    electric: ['water','flying'],
+    ice: ['grass','ground','flying','dragon'],
+    fighting: ['normal','ice','rock','dark','steel'],
+    poison: ['grass','fairy'],
+    ground: ['fire','electric','poison','rock','steel'],
+    flying: ['grass','fighting','bug'],
+    psychic: ['fighting','poison'],
+    bug: ['grass','psychic','dark'],
+    rock: ['fire','ice','flying','bug'],
+    ghost: ['psychic','ghost'],
+    dragon: ['dragon'],
+    dark: ['psychic','ghost'],
+    steel: ['ice','rock','fairy'],
+    fairy: ['fighting','dragon','dark'],
+  };
+  const hasTypeAdvantage = (attacker: Pokemon, defender: Pokemon) => {
+    return attacker.types.some(t => (typeAdvantage[t.toLowerCase()] || []).some(d => defender.types.map(x => x.toLowerCase()).includes(d)));
+  };
+  const adjustedPower = (attacker: Pokemon, defender: Pokemon) => {
+    const base = attacker.totalStats;
+    return hasTypeAdvantage(attacker, defender) ? Math.round(base * 1.2) : base;
+  };
+  
   // --- ONLINE STATE (via PeerJS Hook) ---
   const {
     gameState: onlineGameState,
@@ -23,7 +51,8 @@ export default function Home() {
     drawCard: handleOnlineDraw,
     nextRound: handleOnlineNextRound,
     restartGame: handleOnlineRestart,
-    leaveGame
+    leaveGame,
+    bonusPick: handleOnlineBonusPick
   } = usePeerGame();
 
   const [inputCode, setInputCode] = useState('');
@@ -44,7 +73,8 @@ export default function Home() {
       currentTurn: 'p1',
       roundWinner: null,
       logs: ['Local Game Started!'],
-      players: { p1: true, p2: true }
+      players: { p1: true, p2: true },
+      bonusPickAvailable: { p1: true, p2: true }
     });
     setMode('local');
   };
@@ -65,17 +95,15 @@ export default function Home() {
       newState.currentTurn = null; // End of turn
       newState.logs = [`Player 2 drew ${randomPokemon.name}!`, ...newState.logs].slice(0, 5);
 
-      // Determine Winner
-      const p1Power = newState.p1Card!.totalStats;
-      const p2Power = newState.p2Card!.totalStats;
+      // Determine Winner (apply type advantage bonus)
+      const p1Power = adjustedPower(newState.p1Card!, newState.p2Card!);
+      const p2Power = adjustedPower(newState.p2Card!, newState.p1Card!);
 
       if (p1Power > p2Power) {
         newState.roundWinner = 'p1';
-        newState.scores.p1 += 1;
         newState.logs = ['Player 1 wins the round!', ...newState.logs].slice(0, 5);
       } else if (p2Power > p1Power) {
         newState.roundWinner = 'p2';
-        newState.scores.p2 += 1;
         newState.logs = ['Player 2 wins the round!', ...newState.logs].slice(0, 5);
       } else {
         newState.roundWinner = 'draw';
@@ -93,6 +121,19 @@ export default function Home() {
     
     const newState = { ...localGameState };
     
+    // Apply scores for the completed round before advancing
+    if (newState.status === 'ROUND_RESULT' && newState.p1Card && newState.p2Card && newState.roundWinner && newState.roundWinner !== 'draw') {
+      const p1Power = adjustedPower(newState.p1Card, newState.p2Card);
+      const p2Power = adjustedPower(newState.p2Card, newState.p1Card);
+      const diff = Math.abs(p1Power - p2Power);
+      const winner = newState.roundWinner;
+      newState.scores[winner] += 1;
+      if (diff >= 150) {
+        newState.scores[winner] += 1;
+        newState.logs = [`Overkill bonus! +1 point for ${winner.toUpperCase()}`, ...newState.logs].slice(0, 5);
+      }
+    }
+    
     if (newState.round >= newState.totalRounds) {
       newState.status = 'GAME_OVER';
       newState.logs = ['Game Over!', ...newState.logs].slice(0, 5);
@@ -109,6 +150,44 @@ export default function Home() {
     setLocalGameState(newState);
   };
 
+  const handleLocalBonusPickP1 = () => {
+    if (!localGameState || !localGameState.bonusPickAvailable.p1 || localGameState.status !== 'ROUND_RESULT') return;
+    const newState = { ...localGameState };
+    newState.p1Card = pokemonData[Math.floor(Math.random() * pokemonData.length)];
+    newState.bonusPickAvailable = { p1: false, p2: newState.bonusPickAvailable.p2 };
+    const p1Power = adjustedPower(newState.p1Card!, newState.p2Card!);
+    const p2Power = adjustedPower(newState.p2Card!, newState.p1Card!);
+    if (p1Power > p2Power) {
+      newState.roundWinner = 'p1';
+      newState.logs = [`Player 1 used Bonus Pick and takes the lead with ${newState.p1Card!.name}!`, ...newState.logs].slice(0, 5);
+    } else if (p2Power > p1Power) {
+      newState.roundWinner = 'p2';
+      newState.logs = [`Player 1 used Bonus Pick but it's not enough.`, ...newState.logs].slice(0, 5);
+    } else {
+      newState.roundWinner = 'draw';
+      newState.logs = [`Player 1 used Bonus Pick and forced a draw.`, ...newState.logs].slice(0, 5);
+    }
+    setLocalGameState(newState);
+  };
+  const handleLocalBonusPickP2 = () => {
+    if (!localGameState || !localGameState.bonusPickAvailable.p2 || localGameState.status !== 'ROUND_RESULT') return;
+    const newState = { ...localGameState };
+    newState.p2Card = pokemonData[Math.floor(Math.random() * pokemonData.length)];
+    newState.bonusPickAvailable = { p1: newState.bonusPickAvailable.p1, p2: false };
+    const p1Power = adjustedPower(newState.p1Card!, newState.p2Card!);
+    const p2Power = adjustedPower(newState.p2Card!, newState.p1Card!);
+    if (p2Power > p1Power) {
+      newState.roundWinner = 'p2';
+      newState.logs = [`Player 2 used Bonus Pick and takes the lead with ${newState.p2Card!.name}!`, ...newState.logs].slice(0, 5);
+    } else if (p1Power > p2Power) {
+      newState.roundWinner = 'p1';
+      newState.logs = [`Player 2 used Bonus Pick but it's not enough.`, ...newState.logs].slice(0, 5);
+    } else {
+      newState.roundWinner = 'draw';
+      newState.logs = [`Player 2 used Bonus Pick and forced a draw.`, ...newState.logs].slice(0, 5);
+    }
+    setLocalGameState(newState);
+  };
   const handleLocalRestart = () => {
     startLocalGame();
   };
@@ -168,6 +247,8 @@ export default function Home() {
             onDraw={handleLocalDraw}
             onNextRound={handleLocalNextRound}
             onRestart={handleLocalRestart}
+            onBonusPickP1={handleLocalBonusPickP1}
+            onBonusPickP2={handleLocalBonusPickP2}
          />
       </div>
     );
@@ -240,6 +321,8 @@ export default function Home() {
             onDraw={handleOnlineDraw}
             onNextRound={handleOnlineNextRound}
             onRestart={handleOnlineRestart}
+            onBonusPickP1={handleOnlineBonusPick}
+            onBonusPickP2={handleOnlineBonusPick}
             roomCode={roomCode}
          />
       </div>

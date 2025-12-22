@@ -9,6 +9,8 @@ type GameBoardProps = {
   onDraw: () => void;
   onNextRound: () => void;
   onRestart: () => void;
+  onBonusPickP1?: () => void;
+  onBonusPickP2?: () => void;
   roomCode?: string | null;
 };
 
@@ -19,6 +21,8 @@ export default function GameBoard({
   onDraw, 
   onNextRound, 
   onRestart,
+  onBonusPickP1,
+  onBonusPickP2,
   roomCode 
 }: GameBoardProps) {
   
@@ -126,6 +130,14 @@ export default function GameBoard({
                  {getButtonText('p1')}
                </button>
             )}
+            {gameState.status === 'ROUND_RESULT' && gameState.roundWinner === 'p2' && gameState.bonusPickAvailable.p1 && (
+              <button
+                onClick={onBonusPickP1}
+                className="mt-4 w-full py-3 border-2 border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-slate-950 font-bold text-sm uppercase rounded"
+              >
+                Bonus Pick
+              </button>
+            )}
           </div>
   
           {/* Player 2 Area */}
@@ -160,6 +172,14 @@ export default function GameBoard({
                >
                  {getButtonText('p2')}
                </button>
+            )}
+            {gameState.status === 'ROUND_RESULT' && gameState.roundWinner === 'p1' && gameState.bonusPickAvailable.p2 && (
+              <button
+                onClick={onBonusPickP2}
+                className="mt-4 w-full py-3 border-2 border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-slate-950 font-bold text-sm uppercase rounded"
+              >
+                Bonus Pick
+              </button>
             )}
           </div>
         </div>
@@ -202,7 +222,8 @@ export default function GameBoard({
       </div>
 
       {/* Logs */}
-      <div className="w-full max-w-4xl bg-black border border-emerald-900 p-4 rounded h-32 overflow-hidden font-mono text-sm opacity-70">
+      <div className="w-full max-w-4xl bg-black border border-emerald-900 p-4 rounded h-32 overflow-y-scroll
+ font-mono text-sm opacity-70">
         {gameState.logs.map((log: string, i: number) => (
           <div key={i} className="mb-1 text-emerald-600">&gt; {log}</div>
         ))}

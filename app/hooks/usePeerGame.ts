@@ -5,6 +5,39 @@ import pokemonDataRaw from '../data/pokemon.json';
 
 const pokemonData = pokemonDataRaw as Pokemon[];
 
+type PeerMessage = {
+  type: 'UPDATE' | 'DRAW' | 'NEXT_ROUND' | 'RESTART' | 'BONUS_PICK';
+  state?: GameState;
+};
+
+// Simplified type advantage chart
+const typeAdvantage: Record<string, string[]> = {
+  fire: ['grass','ice','bug','steel'],
+  water: ['fire','ground','rock'],
+  grass: ['water','ground','rock'],
+  electric: ['water','flying'],
+  ice: ['grass','ground','flying','dragon'],
+  fighting: ['normal','ice','rock','dark','steel'],
+  poison: ['grass','fairy'],
+  ground: ['fire','electric','poison','rock','steel'],
+  flying: ['grass','fighting','bug'],
+  psychic: ['fighting','poison'],
+  bug: ['grass','psychic','dark'],
+  rock: ['fire','ice','flying','bug'],
+  ghost: ['psychic','ghost'],
+  dragon: ['dragon'],
+  dark: ['psychic','ghost'],
+  steel: ['ice','rock','fairy'],
+  fairy: ['fighting','dragon','dark'],
+};
+const hasTypeAdvantage = (attacker: Pokemon, defender: Pokemon) => {
+  return attacker.types.some(t => (typeAdvantage[t.toLowerCase()] || []).some(d => defender.types.map(x => x.toLowerCase()).includes(d)));
+};
+const adjustedPower = (attacker: Pokemon, defender: Pokemon) => {
+  const base = attacker.totalStats;
+  return hasTypeAdvantage(attacker, defender) ? Math.round(base * 1.2) : base;
+};
+
 // Helper to generate a random 6-character code
 const generateRoomCode = () => {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -26,7 +59,8 @@ const createInitialGameState = (): GameState => ({
   currentTurn: 'p1',
   roundWinner: null,
   logs: ['Waiting for players...'],
-  players: { p1: true, p2: false }
+  players: { p1: true, p2: false },
+  bonusPickAvailable: { p1: true, p2: true }
 });
 
 type PeerGameHook = {
@@ -41,6 +75,7 @@ type PeerGameHook = {
   nextRound: () => void;
   restartGame: () => void;
   leaveGame: () => void;
+  bonusPick: () => void;
 };
 
 export const usePeerGame = (): PeerGameHook => {
@@ -60,12 +95,7 @@ export const usePeerGame = (): PeerGameHook => {
     gameStateRef.current = gameState;
   }, [gameState]);
 
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      leaveGame();
-    };
-  }, []);
+  // Cleanup on unmount (added after leaveGame is defined)
 
   const leaveGame = useCallback(() => {
     if (connRef.current) {
@@ -82,6 +112,13 @@ export const usePeerGame = (): PeerGameHook => {
     setIsConnected(false);
     setError('');
   }, []);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      leaveGame();
+    };
+  }, [leaveGame]);
 
   // --- HOST LOGIC (Player 1) ---
   const createGame = useCallback(async () => {
@@ -133,8 +170,9 @@ export const usePeerGame = (): PeerGameHook => {
           return newState;
         });
 
-        conn.on('data', (data: any) => {
-          handleHostMessage(data, conn);
+        conn.on('data', (data) => {
+          const msg = data as PeerMessage;
+          handleHostMessage(msg, conn);
         });
 
         conn.on('close', () => {
@@ -159,7 +197,7 @@ export const usePeerGame = (): PeerGameHook => {
   }, [leaveGame]);
 
   // Central Logic Processor (Runs on Host)
-  const handleHostMessage = (message: any, conn: DataConnection) => {
+  const handleHostMessage = (message: PeerMessage, conn: DataConnection) => {
     const currentState = gameStateRef.current;
     if (!currentState) return;
 
@@ -167,52 +205,82 @@ export const usePeerGame = (): PeerGameHook => {
     let shouldUpdate = false;
 
     if (message.type === 'DRAW') {
-        // Verify turn
-        if (newState.currentTurn === 'p2') {
-            const randomPokemon = pokemonData[Math.floor(Math.random() * pokemonData.length)];
-            newState.p2Card = randomPokemon;
-            newState.currentTurn = null; // End of turn
-            newState.logs = [`Player 2 drew ${randomPokemon.name}!`, ...newState.logs].slice(0, 5);
-            
-            // Determine Winner
-            const p1Power = newState.p1Card!.totalStats;
-            const p2Power = newState.p2Card!.totalStats;
+      // Verify turn
+      if (newState.currentTurn === 'p2') {
+        const randomPokemon = pokemonData[Math.floor(Math.random() * pokemonData.length)];
+        newState.p2Card = randomPokemon;
+        newState.currentTurn = null; // End of turn
+        newState.logs = [`Player 2 drew ${randomPokemon.name}!`, ...newState.logs].slice(0, 5);
+        
+        // Determine Winner (apply type advantage bonus)
+        const p1Power = adjustedPower(newState.p1Card!, newState.p2Card!);
+        const p2Power = adjustedPower(newState.p2Card!, newState.p1Card!);
 
-            if (p1Power > p2Power) {
-                newState.roundWinner = 'p1';
-                newState.scores.p1 += 1;
-                newState.logs = ['Player 1 wins the round!', ...newState.logs].slice(0, 5);
-            } else if (p2Power > p1Power) {
-                newState.roundWinner = 'p2';
-                newState.scores.p2 += 1;
-                newState.logs = ['Player 2 wins the round!', ...newState.logs].slice(0, 5);
-            } else {
-                newState.roundWinner = 'draw';
-                newState.logs = ['It\'s a draw!', ...newState.logs].slice(0, 5);
-            }
-
-            newState.status = 'ROUND_RESULT';
-            shouldUpdate = true;
-        }
-    } else if (message.type === 'NEXT_ROUND') {
-        if (newState.round >= newState.totalRounds) {
-            newState.status = 'GAME_OVER';
-            newState.logs = ['Game Over!', ...newState.logs].slice(0, 5);
+        if (p1Power > p2Power) {
+          newState.roundWinner = 'p1';
+          newState.logs = ['Player 1 wins the round!', ...newState.logs].slice(0, 5);
+        } else if (p2Power > p1Power) {
+          newState.roundWinner = 'p2';
+          newState.logs = ['Player 2 wins the round!', ...newState.logs].slice(0, 5);
         } else {
-            newState.round += 1;
-            newState.status = 'PLAYING';
-            newState.p1Card = null;
-            newState.p2Card = null;
-            newState.currentTurn = 'p1';
-            newState.roundWinner = null;
-            newState.logs = [`Round ${newState.round} started!`, ...newState.logs].slice(0, 5);
+          newState.roundWinner = 'draw';
+          newState.logs = ['It\'s a draw!', ...newState.logs].slice(0, 5);
+        }
+
+        newState.status = 'ROUND_RESULT';
+        shouldUpdate = true;
+      }
+    } else if (message.type === 'NEXT_ROUND') {
+      // Apply scores for completed round
+      if (newState.status === 'ROUND_RESULT' && newState.p1Card && newState.p2Card && newState.roundWinner && newState.roundWinner !== 'draw') {
+        const p1Power = adjustedPower(newState.p1Card, newState.p2Card);
+        const p2Power = adjustedPower(newState.p2Card, newState.p1Card);
+        const diff = Math.abs(p1Power - p2Power);
+        const winner = newState.roundWinner;
+        newState.scores[winner] += 1;
+        if (diff >= 150) {
+          newState.scores[winner] += 1;
+          newState.logs = [`Overkill bonus! +1 point for ${winner.toUpperCase()}`, ...newState.logs].slice(0, 5);
+        }
+      }
+      if (newState.round >= newState.totalRounds) {
+        newState.status = 'GAME_OVER';
+        newState.logs = ['Game Over!', ...newState.logs].slice(0, 5);
+      } else {
+        newState.round += 1;
+        newState.status = 'PLAYING';
+        newState.p1Card = null;
+        newState.p2Card = null;
+        newState.currentTurn = 'p1';
+        newState.roundWinner = null;
+        newState.logs = [`Round ${newState.round} started!`, ...newState.logs].slice(0, 5);
+      }
+      shouldUpdate = true;
+    } else if (message.type === 'RESTART' && newState.status === 'GAME_OVER') {
+      newState = createInitialGameState();
+      newState.players.p2 = true; // Keep P2 connected
+      newState.logs = ['Game Restarted!', ...newState.logs];
+      shouldUpdate = true;
+    } else if (message.type === 'BONUS_PICK') {
+      // Only guest can send and only during ROUND_RESULT
+      if (newState.status === 'ROUND_RESULT' && newState.bonusPickAvailable.p2) {
+        newState.p2Card = pokemonData[Math.floor(Math.random() * pokemonData.length)];
+        const b = newState.bonusPickAvailable;
+        newState.bonusPickAvailable = { p1: b.p1, p2: false };
+        const p1Power = adjustedPower(newState.p1Card!, newState.p2Card!);
+        const p2Power = adjustedPower(newState.p2Card!, newState.p1Card!);
+        if (p2Power > p1Power) {
+          newState.roundWinner = 'p2';
+          newState.logs = [`Player 2 used Bonus Pick and takes the lead with ${newState.p2Card!.name}!`, ...newState.logs].slice(0, 5);
+        } else if (p1Power > p2Power) {
+          newState.roundWinner = 'p1';
+          newState.logs = [`Player 2 used Bonus Pick but it's not enough.`, ...newState.logs].slice(0, 5);
+        } else {
+          newState.roundWinner = 'draw';
+          newState.logs = [`Player 2 used Bonus Pick and forced a draw.`, ...newState.logs].slice(0, 5);
         }
         shouldUpdate = true;
-    } else if (message.type === 'RESTART' && newState.status === 'GAME_OVER') {
-        newState = createInitialGameState();
-        newState.players.p2 = true; // Keep P2 connected
-        newState.logs = ['Game Restarted!', ...newState.logs];
-        shouldUpdate = true;
+      }
     }
 
     if (shouldUpdate) {
@@ -242,17 +310,29 @@ export const usePeerGame = (): PeerGameHook => {
     if (!currentState) return;
     
     const newState = { ...currentState };
+    // Apply scores for completed round
+    if (newState.status === 'ROUND_RESULT' && newState.p1Card && newState.p2Card && newState.roundWinner && newState.roundWinner !== 'draw') {
+      const p1Power = adjustedPower(newState.p1Card, newState.p2Card);
+      const p2Power = adjustedPower(newState.p2Card, newState.p1Card);
+      const diff = Math.abs(p1Power - p2Power);
+      const winner = newState.roundWinner;
+      newState.scores[winner] += 1;
+      if (diff >= 150) {
+        newState.scores[winner] += 1;
+        newState.logs = [`Overkill bonus! +1 point for ${winner.toUpperCase()}`, ...newState.logs].slice(0, 5);
+      }
+    }
     if (newState.round >= newState.totalRounds) {
-        newState.status = 'GAME_OVER';
-        newState.logs = ['Game Over!', ...newState.logs].slice(0, 5);
+      newState.status = 'GAME_OVER';
+      newState.logs = ['Game Over!', ...newState.logs].slice(0, 5);
     } else {
-        newState.round += 1;
-        newState.status = 'PLAYING';
-        newState.p1Card = null;
-        newState.p2Card = null;
-        newState.currentTurn = 'p1';
-        newState.roundWinner = null;
-        newState.logs = [`Round ${newState.round} started!`, ...newState.logs].slice(0, 5);
+      newState.round += 1;
+      newState.status = 'PLAYING';
+      newState.p1Card = null;
+      newState.p2Card = null;
+      newState.currentTurn = 'p1';
+      newState.roundWinner = null;
+      newState.logs = [`Round ${newState.round} started!`, ...newState.logs].slice(0, 5);
     }
 
     setGameState(newState);
@@ -269,6 +349,28 @@ export const usePeerGame = (): PeerGameHook => {
     if (connRef.current) connRef.current.send({ type: 'UPDATE', state: newState });
   };
 
+  const hostBonusPick = () => {
+    const currentState = gameStateRef.current;
+    if (!currentState || currentState.status !== 'ROUND_RESULT' || !currentState.bonusPickAvailable.p1) return;
+    const newState = { ...currentState };
+    newState.p1Card = pokemonData[Math.floor(Math.random() * pokemonData.length)];
+    const b = newState.bonusPickAvailable;
+    newState.bonusPickAvailable = { p1: false, p2: b.p2 };
+    const p1Power = adjustedPower(newState.p1Card!, newState.p2Card!);
+    const p2Power = adjustedPower(newState.p2Card!, newState.p1Card!);
+    if (p1Power > p2Power) {
+      newState.roundWinner = 'p1';
+      newState.logs = [`Player 1 used Bonus Pick and takes the lead with ${newState.p1Card!.name}!`, ...newState.logs].slice(0, 5);
+    } else if (p2Power > p1Power) {
+      newState.roundWinner = 'p2';
+      newState.logs = [`Player 1 used Bonus Pick but it's not enough.`, ...newState.logs].slice(0, 5);
+    } else {
+      newState.roundWinner = 'draw';
+      newState.logs = [`Player 1 used Bonus Pick and forced a draw.`, ...newState.logs].slice(0, 5);
+    }
+    setGameState(newState);
+    if (connRef.current) connRef.current.send({ type: 'UPDATE', state: newState });
+  };
 
   // --- GUEST LOGIC (Player 2) ---
   const joinGame = useCallback(async (code: string) => {
@@ -295,9 +397,10 @@ export const usePeerGame = (): PeerGameHook => {
           setIsConnected(true);
         });
 
-        conn.on('data', (data: any) => {
-          if (data.type === 'UPDATE') {
-            setGameState(data.state);
+        conn.on('data', (data) => {
+          const msg = data as PeerMessage;
+          if (msg.type === 'UPDATE' && msg.state) {
+            setGameState(msg.state);
           }
         });
 
@@ -332,17 +435,6 @@ export const usePeerGame = (): PeerGameHook => {
   // OR we send requests. The UI currently shows Next Round/Restart to both.
   // Let's implement Guest requests for these too to keep it symmetric.
   
-  const guestNextRound = () => {
-     // For simplicity, let's make Next Round auto-synced or Host-driven.
-     // But if the UI shows the button to the Winner, and P2 wins, P2 needs to be able to click it.
-     // Wait, the UI logic in GameBoard shows the button to *everyone*?
-     // Actually GameBoard: onClick={onNextRound}.
-     // Let's allow Guest to trigger it via message.
-     // BUT, the current Host Logic doesn't handle NEXT_ROUND message. 
-     // I should add it if I want P2 to be able to click it.
-     // However, simpler is: Only Host can click "Next Round" or "Restart".
-     // Or, let's update Host Logic to accept these commands.
-  };
   
   // Actually, to avoid complexity, let's just send the message.
   // But I need to update handleHostMessage above.
@@ -364,6 +456,11 @@ export const usePeerGame = (): PeerGameHook => {
     if (myRole === 'p1') hostRestart();
     else if (connRef.current) connRef.current.send({ type: 'RESTART' });
   };
+  
+  const bonusPick = () => {
+    if (myRole === 'p1') hostBonusPick();
+    else if (connRef.current) connRef.current.send({ type: 'BONUS_PICK' });
+  };
 
   return {
     gameState,
@@ -376,6 +473,7 @@ export const usePeerGame = (): PeerGameHook => {
     drawCard,
     nextRound,
     restartGame,
-    leaveGame
+    leaveGame,
+    bonusPick
   };
 };

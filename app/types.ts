@@ -18,4 +18,5 @@ export type GameState = {
   roundWinner: 'p1' | 'p2' | 'draw' | null;
   logs: string[];
   players: { p1: boolean; p2: boolean };
+  bonusPickAvailable: { p1: boolean; p2: boolean };
 };
