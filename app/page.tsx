@@ -74,7 +74,8 @@ export default function Home() {
       roundWinner: null,
       logs: ['Local Game Started!'],
       players: { p1: true, p2: true },
-      bonusPickAvailable: { p1: true, p2: true }
+      bonusPickAvailable: { p1: true, p2: true },
+      isTieBreak: false
     });
     setMode('local');
   };
@@ -106,8 +107,19 @@ export default function Home() {
         newState.roundWinner = 'p2';
         newState.logs = ['Player 2 wins the round!', ...newState.logs].slice(0, 5);
       } else {
-        newState.roundWinner = 'draw';
-        newState.logs = ['It\'s a draw!', ...newState.logs].slice(0, 5);
+        if (newState.isTieBreak) {
+          newState.logs = ['Tie-break draw. Redraw!', ...newState.logs].slice(0, 5);
+          newState.status = 'PLAYING';
+          newState.p1Card = null;
+          newState.p2Card = null;
+          newState.currentTurn = 'p1';
+          newState.roundWinner = null;
+          setLocalGameState(newState);
+          return;
+        } else {
+          newState.roundWinner = 'draw';
+          newState.logs = ['It\'s a draw!', ...newState.logs].slice(0, 5);
+        }
       }
 
       newState.status = 'ROUND_RESULT';
@@ -138,9 +150,22 @@ export default function Home() {
       }
     }
     
-    if (newState.round >= newState.totalRounds) {
+    if (newState.isTieBreak) {
       newState.status = 'GAME_OVER';
-      newState.logs = ['Game Over!', ...newState.logs].slice(0, 5);
+      newState.logs = ['Final round complete!', ...newState.logs].slice(0, 5);
+    } else if (newState.round >= newState.totalRounds) {
+      if (newState.scores.p1 === newState.scores.p2) {
+        newState.status = 'PLAYING';
+        newState.isTieBreak = true;
+        newState.p1Card = null;
+        newState.p2Card = null;
+        newState.currentTurn = 'p1';
+        newState.roundWinner = null;
+        newState.logs = ['Final Round! No draws allowed.', ...newState.logs].slice(0, 5);
+      } else {
+        newState.status = 'GAME_OVER';
+        newState.logs = ['Game Over!', ...newState.logs].slice(0, 5);
+      }
     } else {
       newState.round += 1;
       newState.status = 'PLAYING';

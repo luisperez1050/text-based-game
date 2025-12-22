@@ -60,7 +60,8 @@ const createInitialGameState = (): GameState => ({
   roundWinner: null,
   logs: ['Waiting for players...'],
   players: { p1: true, p2: false },
-  bonusPickAvailable: { p1: true, p2: true }
+  bonusPickAvailable: { p1: true, p2: true },
+  isTieBreak: false
 });
 
 type PeerGameHook = {
@@ -223,8 +224,22 @@ export const usePeerGame = (): PeerGameHook => {
           newState.roundWinner = 'p2';
           newState.logs = ['Player 2 wins the round!', ...newState.logs].slice(0, 5);
         } else {
-          newState.roundWinner = 'draw';
-          newState.logs = ['It\'s a draw!', ...newState.logs].slice(0, 5);
+          // If tie occurs during a tie-break, force redraw (no draws)
+          if (newState.isTieBreak) {
+            newState.logs = ['Tie-break draw. Redraw!', ...newState.logs].slice(0, 5);
+            newState.status = 'PLAYING';
+            newState.p1Card = null;
+            newState.p2Card = null;
+            newState.currentTurn = 'p1';
+            newState.roundWinner = null;
+            shouldUpdate = true;
+            setGameState(newState);
+            conn.send({ type: 'UPDATE', state: newState });
+            return;
+          } else {
+            newState.roundWinner = 'draw';
+            newState.logs = ['It\'s a draw!', ...newState.logs].slice(0, 5);
+          }
         }
 
         newState.status = 'ROUND_RESULT';
@@ -247,9 +262,24 @@ export const usePeerGame = (): PeerGameHook => {
           newState.logs = [`Overkill bonus! +2 point for ${winner.toUpperCase()}`, ...newState.logs].slice(0, 5);
         }
       }
-      if (newState.round >= newState.totalRounds) {
+      if (newState.isTieBreak) {
+        // After tie-break round, finish game
         newState.status = 'GAME_OVER';
-        newState.logs = ['Game Over!', ...newState.logs].slice(0, 5);
+        newState.logs = ['Final round complete!', ...newState.logs].slice(0, 5);
+      } else if (newState.round >= newState.totalRounds) {
+        // If scores tied, initiate tie-break instead of game over
+        if (newState.scores.p1 === newState.scores.p2) {
+          newState.status = 'PLAYING';
+          newState.isTieBreak = true;
+          newState.p1Card = null;
+          newState.p2Card = null;
+          newState.currentTurn = 'p1';
+          newState.roundWinner = null;
+          newState.logs = ['Final Round! No draws allowed.', ...newState.logs].slice(0, 5);
+        } else {
+          newState.status = 'GAME_OVER';
+          newState.logs = ['Game Over!', ...newState.logs].slice(0, 5);
+        }
       } else {
         newState.round += 1;
         newState.status = 'PLAYING';
@@ -326,13 +356,26 @@ export const usePeerGame = (): PeerGameHook => {
         newState.logs = [`Overkill bonus! +1 point for ${winner.toUpperCase()}`, ...newState.logs].slice(0, 5);
       }
       if (diff >= 300) {
-          newState.scores[winner] += 2;
-          newState.logs = [`Overkill bonus! +2 point for ${winner.toUpperCase()}`, ...newState.logs].slice(0, 5);
-        }
+        newState.scores[winner] += 2;
+        newState.logs = [`Overkill bonus! +2 point for ${winner.toUpperCase()}`, ...newState.logs].slice(0, 5);
+      }
     }
-    if (newState.round >= newState.totalRounds) {
+    if (newState.isTieBreak) {
       newState.status = 'GAME_OVER';
-      newState.logs = ['Game Over!', ...newState.logs].slice(0, 5);
+      newState.logs = ['Final round complete!', ...newState.logs].slice(0, 5);
+    } else if (newState.round >= newState.totalRounds) {
+      if (newState.scores.p1 === newState.scores.p2) {
+        newState.status = 'PLAYING';
+        newState.isTieBreak = true;
+        newState.p1Card = null;
+        newState.p2Card = null;
+        newState.currentTurn = 'p1';
+        newState.roundWinner = null;
+        newState.logs = ['Final Round! No draws allowed.', ...newState.logs].slice(0, 5);
+      } else {
+        newState.status = 'GAME_OVER';
+        newState.logs = ['Game Over!', ...newState.logs].slice(0, 5);
+      }
     } else {
       newState.round += 1;
       newState.status = 'PLAYING';

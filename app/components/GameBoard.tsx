@@ -56,7 +56,9 @@ export default function GameBoard({
           </div>
         </div>
         <div className="text-right">
-          <div className="text-2xl font-bold">ROUND {gameState.round > gameState.totalRounds ? gameState.totalRounds : gameState.round}/{gameState.totalRounds}</div>
+          <div className="text-2xl font-bold">
+            {gameState.isTieBreak ? 'FINAL ROUND' : `ROUND ${gameState.round > gameState.totalRounds ? gameState.totalRounds : gameState.round}/${gameState.totalRounds}`}
+          </div>
           <div className="flex gap-4 text-sm justify-end">
              <span>P1: {gameState.scores.p1}</span>
              <span>P2: {gameState.scores.p2}</span>

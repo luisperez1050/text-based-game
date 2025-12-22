@@ -19,4 +19,5 @@ export type GameState = {
   logs: string[];
   players: { p1: boolean; p2: boolean };
   bonusPickAvailable: { p1: boolean; p2: boolean };
+  isTieBreak: boolean;
 };
