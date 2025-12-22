@@ -20,4 +20,6 @@ export type GameState = {
   players: { p1: boolean; p2: boolean };
   bonusPickAvailable: { p1: boolean; p2: boolean };
   isTieBreak: boolean;
+  names: { p1: string | null; p2: string | null };
+  stats: { p1Overkills: number; p2Overkills: number; p1BonusPicks: number; p2BonusPicks: number; tieBreakWin: 'p1' | 'p2' | null };
 };

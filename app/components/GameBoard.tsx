@@ -11,6 +11,8 @@ type GameBoardProps = {
   onRestart: () => void;
   onBonusPickP1?: () => void;
   onBonusPickP2?: () => void;
+  onSetNameP1?: (name: string) => void;
+  onSetNameP2?: (name: string) => void;
   roomCode?: string | null;
 };
 
@@ -23,6 +25,8 @@ export default function GameBoard({
   onRestart,
   onBonusPickP1,
   onBonusPickP2,
+  onSetNameP1,
+  onSetNameP2,
   roomCode 
 }: GameBoardProps) {
   
@@ -60,8 +64,8 @@ export default function GameBoard({
             {gameState.isTieBreak ? 'FINAL ROUND' : `ROUND ${gameState.round > gameState.totalRounds ? gameState.totalRounds : gameState.round}/${gameState.totalRounds}`}
           </div>
           <div className="flex gap-4 text-sm justify-end">
-             <span>P1: {gameState.scores.p1}</span>
-             <span>P2: {gameState.scores.p2}</span>
+             <span>{gameState.names?.p1 ? gameState.names.p1 : 'P1'}: {gameState.scores.p1}</span>
+             <span>{gameState.names?.p2 ? gameState.names.p2 : 'P2'}: {gameState.scores.p2}</span>
           </div>
           {!localMode && (
             <div className="mt-2 text-xs font-bold bg-emerald-900 px-2 py-1 rounded inline-block text-emerald-100">
@@ -101,7 +105,19 @@ export default function GameBoard({
         <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
           {/* Player 1 Area */}
           <div className={`border-2 ${gameState.currentTurn === 'p1' ? 'border-emerald-400 shadow-[0_0_15px_rgba(52,211,153,0.3)]' : 'border-emerald-900'} bg-slate-900 p-6 rounded-lg min-h-[400px] flex flex-col items-center relative transition-all duration-300`}>
-            <div className="absolute top-2 left-2 text-xs font-bold bg-emerald-900 px-2 py-1 rounded">PLAYER 1 {(!localMode && myRole === 'p1') && '(YOU)'}</div>
+            <div className="absolute top-2 left-2 text-xs font-bold bg-emerald-900 px-2 py-1 rounded">
+              {gameState.names?.p1 ? gameState.names.p1 : 'PLAYER 1'} {(!localMode && myRole === 'p1') && '(YOU)'}
+            </div>
+            <div className="absolute top-2 left-40">
+              <input
+                type="text"
+                maxLength={20}
+                value={gameState.names?.p1 ?? ''}
+                onChange={(e) => onSetNameP1 && onSetNameP1(e.target.value)}
+                placeholder="Add name"
+                className="bg-slate-800 text-emerald-400 text-xs px-2 py-1 rounded border border-emerald-800"
+              />
+            </div>
             
             {gameState.p1Card ? (
               <div className="flex-1 flex flex-col items-center justify-center w-full animate-in fade-in zoom-in duration-300">
@@ -144,7 +160,19 @@ export default function GameBoard({
   
           {/* Player 2 Area */}
           <div className={`border-2 ${gameState.currentTurn === 'p2' ? 'border-emerald-400 shadow-[0_0_15px_rgba(52,211,153,0.3)]' : 'border-emerald-900'} bg-slate-900 p-6 rounded-lg min-h-[400px] flex flex-col items-center relative transition-all duration-300`}>
-            <div className="absolute top-2 right-2 text-xs font-bold bg-emerald-900 px-2 py-1 rounded">PLAYER 2 {(!localMode && myRole === 'p2') && '(YOU)'}</div>
+            <div className="absolute top-2 right-2 text-xs font-bold bg-emerald-900 px-2 py-1 rounded">
+              {gameState.names?.p2 ? gameState.names.p2 : 'PLAYER 2'} {(!localMode && myRole === 'p2') && '(YOU)'}
+            </div>
+            <div className="absolute top-2 right-40">
+              <input
+                type="text"
+                maxLength={20}
+                value={gameState.names?.p2 ?? ''}
+                onChange={(e) => onSetNameP2 && onSetNameP2(e.target.value)}
+                placeholder="Add name"
+                className="bg-slate-800 text-emerald-400 text-xs px-2 py-1 rounded border border-emerald-800"
+              />
+            </div>
             
             {gameState.p2Card ? (
               <div className="flex-1 flex flex-col items-center justify-center w-full animate-in fade-in zoom-in duration-300">

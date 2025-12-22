@@ -6,8 +6,9 @@ import pokemonDataRaw from '../data/pokemon.json';
 const pokemonData = pokemonDataRaw as Pokemon[];
 
 type PeerMessage = {
-  type: 'UPDATE' | 'DRAW' | 'NEXT_ROUND' | 'RESTART' | 'BONUS_PICK';
+  type: 'UPDATE' | 'DRAW' | 'NEXT_ROUND' | 'RESTART' | 'BONUS_PICK' | 'SET_NAME';
   state?: GameState;
+  name?: string;
 };
 
 // Simplified type advantage chart
@@ -61,7 +62,9 @@ const createInitialGameState = (): GameState => ({
   logs: ['Waiting for players...'],
   players: { p1: true, p2: false },
   bonusPickAvailable: { p1: true, p2: true },
-  isTieBreak: false
+  isTieBreak: false,
+  names: { p1: null, p2: null },
+  stats: { p1Overkills: 0, p2Overkills: 0, p1BonusPicks: 0, p2BonusPicks: 0, tieBreakWin: null }
 });
 
 type PeerGameHook = {
@@ -77,6 +80,7 @@ type PeerGameHook = {
   restartGame: () => void;
   leaveGame: () => void;
   bonusPick: () => void;
+  setName: (name: string) => void;
 };
 
 export const usePeerGame = (): PeerGameHook => {
@@ -173,6 +177,15 @@ export const usePeerGame = (): PeerGameHook => {
 
         conn.on('data', (data) => {
           const msg = data as PeerMessage;
+          if (msg.type === 'SET_NAME' && typeof msg.name === 'string') {
+            setGameState(prev => {
+              if (!prev) return null;
+              const updated: GameState = { ...prev, names: { p2: msg.name!, p1: prev.names.p1 } };
+              conn.send({ type: 'UPDATE', state: updated });
+              return updated;
+            });
+            return;
+          }
           handleHostMessage(msg, conn);
         });
 
@@ -256,6 +269,8 @@ export const usePeerGame = (): PeerGameHook => {
         if (diff >= 150) {
           newState.scores[winner] += 1;
           newState.logs = [`Overkill bonus! +1 point for ${winner.toUpperCase()}`, ...newState.logs].slice(0, 5);
+          if (winner === 'p1') newState.stats.p1Overkills += 1;
+          else newState.stats.p2Overkills += 1;
         }
         if (diff >= 300) {
           newState.scores[winner] += 2;
@@ -301,6 +316,7 @@ export const usePeerGame = (): PeerGameHook => {
         newState.p2Card = pokemonData[Math.floor(Math.random() * pokemonData.length)];
         const b = newState.bonusPickAvailable;
         newState.bonusPickAvailable = { p1: b.p1, p2: false };
+        newState.stats.p2BonusPicks += 1;
         const p1Power = adjustedPower(newState.p1Card!, newState.p2Card!);
         const p2Power = adjustedPower(newState.p2Card!, newState.p1Card!);
         if (p2Power > p1Power) {
@@ -315,12 +331,12 @@ export const usePeerGame = (): PeerGameHook => {
         }
         shouldUpdate = true;
       }
-    }
-
-    if (shouldUpdate) {
-        setGameState(newState);
-        conn.send({ type: 'UPDATE', state: newState });
-    }
+      }
+      
+      if (shouldUpdate) {
+          setGameState(newState);
+          conn.send({ type: 'UPDATE', state: newState });
+      }
   };
 
   // Host Action Handlers
@@ -354,16 +370,19 @@ export const usePeerGame = (): PeerGameHook => {
       if (diff >= 150) {
         newState.scores[winner] += 1;
         newState.logs = [`Overkill bonus! +1 point for ${winner.toUpperCase()}`, ...newState.logs].slice(0, 5);
+        if (winner === 'p1') newState.stats.p1Overkills += 1;
+        else newState.stats.p2Overkills += 1;
       }
       if (diff >= 300) {
         newState.scores[winner] += 2;
         newState.logs = [`Overkill bonus! +2 point for ${winner.toUpperCase()}`, ...newState.logs].slice(0, 5);
       }
     }
-    if (newState.isTieBreak) {
-      newState.status = 'GAME_OVER';
-      newState.logs = ['Final round complete!', ...newState.logs].slice(0, 5);
-    } else if (newState.round >= newState.totalRounds) {
+      if (newState.isTieBreak) {
+        newState.status = 'GAME_OVER';
+        newState.logs = ['Final round complete!', ...newState.logs].slice(0, 5);
+        if (newState.roundWinner && newState.roundWinner !== 'draw') newState.stats.tieBreakWin = newState.roundWinner;
+      } else if (newState.round >= newState.totalRounds) {
       if (newState.scores.p1 === newState.scores.p2) {
         newState.status = 'PLAYING';
         newState.isTieBreak = true;
@@ -407,6 +426,7 @@ export const usePeerGame = (): PeerGameHook => {
     newState.p1Card = pokemonData[Math.floor(Math.random() * pokemonData.length)];
     const b = newState.bonusPickAvailable;
     newState.bonusPickAvailable = { p1: false, p2: b.p2 };
+    newState.stats.p1BonusPicks += 1;
     const p1Power = adjustedPower(newState.p1Card!, newState.p2Card!);
     const p2Power = adjustedPower(newState.p2Card!, newState.p1Card!);
     if (p1Power > p2Power) {
@@ -512,6 +532,21 @@ export const usePeerGame = (): PeerGameHook => {
     if (myRole === 'p1') hostBonusPick();
     else if (connRef.current) connRef.current.send({ type: 'BONUS_PICK' });
   };
+  
+  const setName = (name: string) => {
+    const trimmed = name.trim().slice(0, 20);
+    if (!trimmed) return;
+    if (myRole === 'p1') {
+      setGameState(prev => {
+        if (!prev) return null;
+        const updated: GameState = { ...prev, names: { p1: trimmed, p2: prev.names.p2 } };
+        if (connRef.current) connRef.current.send({ type: 'UPDATE', state: updated });
+        return updated;
+      });
+    } else if (connRef.current) {
+      connRef.current.send({ type: 'SET_NAME', name: trimmed });
+    }
+  };
 
   return {
     gameState,
@@ -525,6 +560,7 @@ export const usePeerGame = (): PeerGameHook => {
     nextRound,
     restartGame,
     leaveGame,
-    bonusPick
+    bonusPick,
+    setName
   };
 };
