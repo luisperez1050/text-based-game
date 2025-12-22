@@ -121,7 +121,11 @@ export const usePeerGame = (): PeerGameHook => {
         // Update state to show P2 connected
         setGameState(prev => {
           if (!prev) return null;
-          const newState = { ...prev, players: { ...prev.players, p2: true } };
+          const newState = { 
+            ...prev, 
+            players: { ...prev.players, p2: true },
+            status: 'PLAYING' as const
+          };
           newState.logs = ['Player 2 joined!', ...newState.logs].slice(0, 5);
           
           // Send initial state to P2
@@ -137,7 +141,11 @@ export const usePeerGame = (): PeerGameHook => {
           console.log('Host: Player 2 disconnected');
           setGameState(prev => {
             if (!prev) return null;
-            const newState = { ...prev, players: { ...prev.players, p2: false } };
+            const newState = { 
+              ...prev, 
+              players: { ...prev.players, p2: false },
+              status: 'WAITING' as const
+            };
             newState.logs = ['Player 2 disconnected', ...newState.logs].slice(0, 5);
             return newState;
           });
