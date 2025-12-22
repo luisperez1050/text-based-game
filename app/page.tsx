@@ -1,97 +1,36 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { io, Socket } from 'socket.io-client';
+import { useState } from 'react';
 import GameBoard from './components/GameBoard';
 import { GameState, Pokemon } from './types';
 import pokemonDataRaw from './data/pokemon.json';
+import { usePeerGame } from './hooks/usePeerGame';
 
 const pokemonData = pokemonDataRaw as Pokemon[];
-
-let socket: Socket | null = null;
 
 export default function Home() {
   const [mode, setMode] = useState<'menu' | 'local' | 'online'>('menu');
   
-  // --- ONLINE STATE ---
-  const [onlineGameState, setOnlineGameState] = useState<GameState | null>(null);
-  const [myRole, setMyRole] = useState<'p1' | 'p2' | 'spectator' | null>(null);
-  const [isConnected, setIsConnected] = useState(false);
-  const [roomCode, setRoomCode] = useState<string | null>(null);
+  // --- ONLINE STATE (via PeerJS Hook) ---
+  const {
+    gameState: onlineGameState,
+    myRole,
+    roomCode,
+    isConnected,
+    error: joinError,
+    createGame,
+    joinGame,
+    drawCard: handleOnlineDraw,
+    nextRound: handleOnlineNextRound,
+    restartGame: handleOnlineRestart,
+    leaveGame
+  } = usePeerGame();
+
   const [inputCode, setInputCode] = useState('');
-  const [joinError, setJoinError] = useState('');
+  const [localJoinError, setLocalJoinError] = useState('');
 
   // --- LOCAL STATE ---
   const [localGameState, setLocalGameState] = useState<GameState | null>(null);
-
-  // --- SOCKET EFFECT ---
-  useEffect(() => {
-    if (mode !== 'online') {
-      if (socket) {
-        socket.disconnect();
-        socket = null;
-      }
-      return;
-    }
-
-    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3001';
-    socket = io(socketUrl);
-
-    socket.on('connect', () => {
-      setIsConnected(true);
-      console.log('Connected to socket server');
-    });
-
-    socket.on('disconnect', () => {
-      setIsConnected(false);
-      console.log('Disconnected from socket server');
-    });
-
-    socket.on('room_joined', ({ roomCode, role }) => {
-      setRoomCode(roomCode);
-      setMyRole(role);
-    });
-
-    socket.on('game_update', (newState: GameState) => {
-      setOnlineGameState(newState);
-    });
-
-    socket.on('error', (msg: string) => {
-      setJoinError(msg);
-    });
-
-    return () => {
-      if (socket) socket.disconnect();
-    };
-  }, [mode]);
-
-  // --- ONLINE HANDLERS ---
-  const createRoom = () => {
-    if (socket) socket.emit('create_room');
-  };
-
-  const joinRoom = () => {
-    if (inputCode.length !== 6) {
-      setJoinError('Code must be 6 characters');
-      return;
-    }
-    setJoinError('');
-    if (socket) socket.emit('join_room', inputCode);
-  };
-
-  const handleOnlineDraw = () => {
-    if (socket && myRole === onlineGameState?.currentTurn) {
-      socket.emit('draw_card');
-    }
-  };
-
-  const handleOnlineNextRound = () => {
-    if (socket) socket.emit('next_round');
-  };
-
-  const handleOnlineRestart = () => {
-    if (socket) socket.emit('restart_game');
-  };
 
   // --- LOCAL HANDLERS ---
   const startLocalGame = () => {
@@ -174,6 +113,15 @@ export default function Home() {
     startLocalGame();
   };
 
+  const handleJoinClick = () => {
+      if (inputCode.length !== 6) {
+          setLocalJoinError('Code must be 6 characters');
+          return;
+      }
+      setLocalJoinError('');
+      joinGame(inputCode);
+  };
+
   // --- RENDER ---
 
   // 1. MENU VIEW
@@ -227,17 +175,6 @@ export default function Home() {
 
   // 3. ONLINE LOBBY / GAME VIEW
   if (mode === 'online') {
-    if (!isConnected) {
-      return (
-        <main className="min-h-screen bg-slate-950 text-emerald-400 font-mono flex flex-col items-center justify-center">
-          <div className="text-2xl animate-pulse mb-4">Connecting to Game Server...</div>
-          <button onClick={() => setMode('menu')} className="text-emerald-600 hover:text-emerald-400 underline">
-            Cancel
-          </button>
-        </main>
-      );
-    }
-
     // Lobby
     if (!roomCode || !onlineGameState) {
       return (
@@ -253,9 +190,15 @@ export default function Home() {
             <div className="flex-1 bg-slate-900 border-2 border-emerald-900 p-8 rounded-lg flex flex-col items-center hover:border-emerald-500 transition-colors">
               <h2 className="text-2xl font-bold mb-4">NEW GAME</h2>
               <button 
-                onClick={createRoom}
+                onClick={createGame}
                 className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold text-xl rounded transition-colors"
               >
+                {isConnected && !roomCode ? 'CREATE ROOM' : 'CREATING...'} 
+                {/* Note: In PeerJS, we don't need to 'connect' to a server first before creating. 
+                    Wait, usePeerGame logic: createGame() calls new Peer(). So we just click Create.
+                    The 'isConnected' in usePeerGame means connected to PeerServer.
+                    Initially isConnected is false. When we click Create, it becomes true.
+                */}
                 CREATE ROOM
               </button>
             </div>
@@ -271,9 +214,9 @@ export default function Home() {
                 maxLength={6}
                 className="w-full bg-slate-950 border border-emerald-700 p-4 text-center text-2xl font-bold tracking-widest mb-4 focus:outline-none focus:border-emerald-400 rounded"
               />
-              {joinError && <p className="text-red-500 mb-4">{joinError}</p>}
+              {(joinError || localJoinError) && <p className="text-red-500 mb-4">{joinError || localJoinError}</p>}
               <button 
-                onClick={joinRoom}
+                onClick={handleJoinClick}
                 className="w-full py-4 border-2 border-emerald-600 hover:bg-emerald-600 hover:text-slate-950 text-emerald-500 font-bold text-xl rounded transition-colors"
               >
                 JOIN ROOM
@@ -287,7 +230,7 @@ export default function Home() {
     // Online Game
     return (
       <div className="relative">
-         <button onClick={() => { setMode('menu'); socket?.disconnect(); }} className="absolute top-4 left-4 z-50 text-emerald-600 hover:text-emerald-400 font-bold border border-emerald-800 px-4 py-2 rounded bg-slate-900">
+         <button onClick={() => { leaveGame(); setMode('menu'); }} className="absolute top-4 left-4 z-50 text-emerald-600 hover:text-emerald-400 font-bold border border-emerald-800 px-4 py-2 rounded bg-slate-900">
             &lt; LEAVE GAME
          </button>
          <GameBoard 

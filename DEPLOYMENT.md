@@ -1,38 +1,24 @@
 
-## Deployment Guide
+## Deployment Guide (Vercel Only)
 
-### 1. Frontend (Next.js) -> Vercel
+This project has been updated to use **PeerJS (WebRTC)** for real-time communication. 
+This means the game is now completely "Serverless" (Client-to-Client), and **no backend server (Render)** is required.
 
-Since your project is already set up for Next.js, deploying to Vercel is straightforward.
+### 1. Deploy to Vercel
 
-**Important:** You need to tell the frontend where your Socket Server is.
-1. Go to your Vercel Project Settings -> Environment Variables.
-2. Add a new variable:
-   - Key: `NEXT_PUBLIC_SOCKET_URL`
-   - Value: `https://your-backend-url.onrender.com` (You will get this URL in Step 2).
-
-### 2. Backend (Socket Server) -> Render (Free Tier)
-
-Since Vercel Serverless functions cannot host a long-running WebSocket server, we will deploy the `server/` folder to **Render** (or Railway/Fly.io).
-
-**Steps to deploy to Render:**
+Since the entire application is just a Next.js frontend, you can deploy it directly to Vercel with zero configuration.
 
 1. **Push your code to GitHub.**
-2. **Create a new Web Service on Render.**
-   - Connect your GitHub repository.
-   - **Root Directory**: Leave empty (defaults to root).
-   - **Build Command**: `npm install`
-   - **Start Command**: `node server/socket-server.js`
-   - **Environment Variables**:
-     - `PORT`: `3001` (or let Render assign one, usually it sets PORT auto).
-3. **Deploy!**
-4. Render will give you a URL like `https://text-adventure-socket.onrender.com`.
-5. **Copy this URL** and go back to Step 1 to update your Vercel Environment Variable.
+2. **Go to Vercel Dashboard.**
+3. **Import your repository.**
+4. **Deploy.**
 
-### Testing
-Once both are deployed:
-1. Open your Vercel URL.
-2. Click "CREATE ROOM".
-3. Share the 6-digit code.
-4. Friend opens Vercel URL -> "JOIN GAME" -> Enters code.
-5. Battle!
+That's it!
+
+### How it works
+- **Local Co-op**: Runs entirely in the browser memory.
+- **Online Multiplayer**: 
+  - Player 1 creates a game. The browser generates a unique "Peer ID" based on a 6-digit code.
+  - Player 2 joins using that code.
+  - The browsers connect directly to each other (P2P) to sync game state.
+  - No database or websocket server is needed.
