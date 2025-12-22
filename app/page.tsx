@@ -132,6 +132,10 @@ export default function Home() {
         newState.scores[winner] += 1;
         newState.logs = [`Overkill bonus! +1 point for ${winner.toUpperCase()}`, ...newState.logs].slice(0, 5);
       }
+      if (diff >= 300) {
+        newState.scores[winner] += 2;
+        newState.logs = [`Overkill bonus! +2 point for ${winner.toUpperCase()}`, ...newState.logs].slice(0, 5);
+      }
     }
     
     if (newState.round >= newState.totalRounds) {
