@@ -20,9 +20,9 @@ Since Vercel Serverless functions cannot host a long-running WebSocket server, w
 1. **Push your code to GitHub.**
 2. **Create a new Web Service on Render.**
    - Connect your GitHub repository.
-   - **Root Directory**: `server` (This is important! It tells Render to look in the server folder).
+   - **Root Directory**: Leave empty (defaults to root).
    - **Build Command**: `npm install`
-   - **Start Command**: `node socket-server.js`
+   - **Start Command**: `node server/socket-server.js`
    - **Environment Variables**:
      - `PORT`: `3001` (or let Render assign one, usually it sets PORT auto).
 3. **Deploy!**
