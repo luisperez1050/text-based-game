@@ -47,7 +47,7 @@ export default function GameBoard({
   };
 
   return (
-    <main className="min-h-screen bg-slate-950 text-emerald-400 font-mono p-4 flex flex-col items-center w-full">
+    <main className="min-h-screen bg-slate-950 text-emerald-400 font-mono p-4 pt-16 flex flex-col items-center w-full">
       {/* Header */}
       <header className="w-full max-w-4xl border-b-2 border-emerald-800 pb-4 mb-8 flex justify-between items-end">
         <div>

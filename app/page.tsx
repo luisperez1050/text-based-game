@@ -316,27 +316,27 @@ export default function Home() {
         
         <div className="flex flex-col md:flex-row gap-8 w-full max-w-4xl">
           {/* Local Mode */}
-          <div className="flex-1 bg-slate-900 border-2 border-emerald-900 p-8 rounded-lg flex flex-col items-center hover:border-emerald-500 transition-colors group cursor-pointer" onClick={startLocalGame}>
+          <div className="flex-1 bg-slate-900 border-2 border-emerald-900 p-8 rounded-lg flex flex-col items-center justify-between hover:border-emerald-500 transition-colors group cursor-pointer" onClick={startLocalGame}>
             <h2 className="text-2xl font-bold mb-4 group-hover:text-emerald-300">LOCAL CO-OP</h2>
-            <p className="mb-8 text-center text-emerald-600">Play with a friend on the same device.</p>
+            <p className="mb-8 text-center text-emerald-600 flex-grow">Play with a friend on the same device.</p>
             <button className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold text-xl rounded transition-colors">
               PLAY LOCAL
             </button>
           </div>
 
           {/* Online Mode */}
-          <div className="flex-1 bg-slate-900 border-2 border-emerald-900 p-8 rounded-lg flex flex-col items-center hover:border-emerald-500 transition-colors group cursor-pointer" onClick={() => setMode('online')}>
-            <h2 className="text-2xl font-bold mb-4 group-hover:text-emerald-300">ONLINE MULTIPLAYER</h2>
-            <p className="mb-8 text-center text-emerald-600">Create a room and invite a remote friend.</p>
+          <div className="flex-1 bg-slate-900 border-2 border-emerald-900 p-8 rounded-lg flex flex-col items-center justify-between hover:border-emerald-500 transition-colors group cursor-pointer" onClick={() => setMode('online')}>
+            <h2 className="text-2xl font-bold mb-4 group-hover:text-emerald-300">ONLINE CO-OP</h2>
+            <p className="mb-8 text-center text-emerald-600 flex-grow">Create a room and invite a remote friend.</p>
             <button className="w-full py-4 border-2 border-emerald-600 hover:bg-emerald-600 hover:text-slate-950 text-emerald-500 font-bold text-xl rounded transition-colors">
               PLAY ONLINE
             </button>
           </div>
           
           {/* Scoreboard */}
-          <div className="flex-1 bg-slate-900 border-2 border-emerald-900 p-8 rounded-lg flex flex-col items-center hover:border-emerald-500 transition-colors group cursor-pointer" onClick={() => setMode('scoreboard')}>
+          <div className="flex-1 bg-slate-900 border-2 border-emerald-900 p-8 rounded-lg flex flex-col items-center justify-between hover:border-emerald-500 transition-colors group cursor-pointer" onClick={() => setMode('scoreboard')}>
             <h2 className="text-2xl font-bold mb-4 group-hover:text-emerald-300">SCOREBOARD</h2>
-            <p className="mb-8 text-center text-emerald-600">View totals across sessions.</p>
+            <p className="mb-8 text-center text-emerald-600 flex-grow">View totals across sessions.</p>
             <button className="w-full py-4 border-2 border-emerald-600 hover:bg-emerald-600 hover:text-slate-950 text-emerald-500 font-bold text-xl rounded transition-colors">
               VIEW SCOREBOARD
             </button>
@@ -351,7 +351,7 @@ export default function Home() {
     return (
       <div className="relative">
          <button onClick={() => setMode('menu')} className="absolute top-4 left-4 z-50 text-emerald-600 hover:text-emerald-400 font-bold border border-emerald-800 px-4 py-2 rounded bg-slate-900">
-            &lt; BACK TO MENU
+            &lt; BACK TO GAME MODE
          </button>
          <GameBoard 
             gameState={localGameState}
@@ -376,12 +376,12 @@ export default function Home() {
       return (
         <main className="min-h-screen bg-slate-950 text-emerald-400 font-mono p-4 flex flex-col items-center justify-center relative">
           <button onClick={() => setMode('menu')} className="absolute top-4 left-4 text-emerald-600 hover:text-emerald-400 font-bold border border-emerald-800 px-4 py-2 rounded bg-slate-900">
-            &lt; BACK TO MENU
+            &lt; BACK TO GAME MODE
           </button>
 
           <h1 className="text-6xl font-bold tracking-widest text-emerald-500 mb-4">ONLINE LOBBY</h1>
           
-          <div className="flex flex-col md:flex-row gap-8 w-full max-w-4xl">
+          <div className="flex flex-col md:flex-row gap-8 w-full max-w-4xl mx-auto">
             {/* Create Room */}
             <div className="flex-1 bg-slate-900 border-2 border-emerald-900 p-8 rounded-lg flex flex-col items-center hover:border-emerald-500 transition-colors">
               <h2 className="text-2xl font-bold mb-4">NEW GAME</h2>
@@ -389,12 +389,6 @@ export default function Home() {
                 onClick={createGame}
                 className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold text-xl rounded transition-colors"
               >
-                {isConnected && !roomCode ? 'CREATE ROOM' : 'CREATING...'} 
-                {/* Note: In PeerJS, we don't need to 'connect' to a server first before creating. 
-                    Wait, usePeerGame logic: createGame() calls new Peer(). So we just click Create.
-                    The 'isConnected' in usePeerGame means connected to PeerServer.
-                    Initially isConnected is false. When we click Create, it becomes true.
-                */}
                 CREATE ROOM
               </button>
             </div>
@@ -452,7 +446,7 @@ export default function Home() {
     return (
       <main className="min-h-screen bg-slate-950 text-emerald-400 font-mono p-8">
         <button onClick={() => setMode('menu')} className="mb-8 text-emerald-600 hover:text-emerald-400 font-bold border border-emerald-800 px-4 py-2 rounded bg-slate-900">
-          &lt; BACK TO MENU
+          &lt; BACK TO GAME MODE
         </button>
         <h1 className="text-4xl font-bold mb-6 text-emerald-500">SCOREBOARD</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
