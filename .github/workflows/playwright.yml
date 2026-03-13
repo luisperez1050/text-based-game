@@ -1,0 +1,29 @@
+name: Playwright Tests
+on:
+  deployment_status: # This triggers when Vercel finishes a deployment
+jobs:
+  test:
+    # Only run if the deployment was successful
+    if: github.event.deployment_status.state == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Browsers
+        run: npx playwright install chromium # Only install chromium as per our config
+
+      - name: Run Playwright tests
+        run: npx playwright test
+        env:
+          # This pulls the actual URL Vercel just created!
+          BASE_URL: ${{ github.event.deployment_status.target_url }}
+          # Add VERA CI environment variables
+          VERA_API_KEY: ${{ secrets.VERA_API_KEY }}
+          VERA_PROJECT_ID: ${{ secrets.VERA_PROJECT_ID }}
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}

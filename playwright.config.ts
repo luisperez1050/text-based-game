@@ -28,40 +28,30 @@ export default defineConfig({
   //     },]],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
-    /* Base URL to use in actions like `await page.goto('/')`. */
-    // baseURL: 'http://127.0.0.1:3000',
-
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
+    // Use the Vercel URL if it exists, otherwise fallback to localhost
+    baseURL: process.env.BASE_URL || 'http://localhost:3000',
     trace: 'on-first-retry',
     screenshot: "on",
-    // Ensure headless mode in CI
-    headless: process.env.CI ? true : false,
+    headless: true, // Always headless for CI, and generally good for Playwright tests
+    extraHTTPHeaders: {
+      'x-vercel-protection-bypass': process.env.VERCEL_AUTOMATION_BYPASS_SECRET || '',
+    },
   },
 
   /* Configure projects for major browsers */
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'], baseURL: 'http://localhost:3000'  },
+      use: { ...devices['Desktop Chrome'] }, // BaseURL inherited from top-level 'use'
     },
-
-    /* Test against mobile viewports. */
     {
       name: 'Mobile Chrome',
-      use: { ...devices['Pixel 5'], baseURL: 'http://localhost:3000' },
+      use: { ...devices['Pixel 5'] }, // BaseURL inherited from top-level 'use'
     },
     {
       name: 'Tablet Chrome',
-      use: { ...devices['Pixel 2 XL'], baseURL: 'http://localhost:3000' },
+      use: { ...devices['Pixel 2 XL'] }, // BaseURL inherited from top-level 'use'
     },
   ],
 
-  /* Run your local dev server before starting the tests */
-  webServer: {
-    command: 'npm run start',
-    url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
-    // Ensure the web server waits until the app is ready in CI
-    timeout: 60 * 1000, // 60 seconds
-  },
 });
