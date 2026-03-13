@@ -1,6 +1,6 @@
 name: Playwright Tests
 on:
-  deployment_status: # This triggers when Vercel finishes a deployment
+  deployment_status: # This triggers when Vercel finishes a deployment 
 jobs:
   test:
     # Only run if the deployment was successful
