@@ -20,12 +20,12 @@ export default defineConfig({
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: [['html']],
-  // reporter: [['html'], ['@vera-ci/playwright-reporter',       {
+
+  reporter: [['html'], ['@vera-ci/playwright-reporter',       {
         // Reads from VERA_API_KEY env var by default
-      //   uploadTraces: true,
-      //   uploadVideos: true,
-      // },]],
+        uploadTraces: true,
+        uploadVideos: true,
+      },]],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
@@ -34,6 +34,8 @@ export default defineConfig({
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
     screenshot: "on",
+    // Ensure headless mode in CI
+    headless: process.env.CI ? true : false,
   },
 
   /* Configure projects for major browsers */
@@ -59,5 +61,7 @@ export default defineConfig({
     command: 'npm run dev',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
+    // Ensure the web server waits until the app is ready in CI
+    timeout: 60 * 1000, // 60 seconds
   },
 });

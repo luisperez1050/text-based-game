@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "postinstall": "npx playwright install --with-deps",
+    "ci:build-and-test": "npm run build && npm run test"
+
   },
   "dependencies": {
     "axios": "^1.13.2",
