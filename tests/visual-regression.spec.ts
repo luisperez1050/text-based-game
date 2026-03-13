@@ -68,7 +68,7 @@ test.describe('Visual Regression for Online Game', () => {
 
 test.describe('Visual Regression for Scoreboard', () => {
   test('view scoreboard', async ({ page }) => {
-    // Mock localStorage with sample data
+    // Mock localStorage with sample data 
     const scoreboardData = {
       "Red": {
         "gamesWon": 2,
