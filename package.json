@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "postinstall": "npx playwright install --with-deps",
+    "postinstall": "npx playwright install",
     "ci:build-and-test": "npm run build && npm run test"
 
   },
