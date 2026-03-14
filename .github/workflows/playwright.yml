@@ -1,11 +1,16 @@
 name: Playwright Tests
 on:
-  repository_dispatch:
-    types:
-      - vercel.deployment.success
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+  deployment_status: # This triggers when Vercel finishes a deployment 
 jobs:
   test:
-    if: github.event_name == 'repository_dispatch'
+    # Only run if the deployment was successful
+    if: github.event.deployment_status.state == 'success'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -22,8 +27,8 @@ jobs:
       - name: Run Playwright tests
         run: npx playwright test
         env:
-          # Deployment URL from Vercel's repository_dispatch payload
-          BASE_URL: ${{ github.event.client_payload.url }}
+          # This pulls the actual URL Vercel just created!
+          BASE_URL: ${{ github.event.deployment_status.target_url }}
           # Add VERA CI environment variables
           VERA_API_KEY: ${{ secrets.VERA_API_KEY }}
           VERA_PROJECT_ID: ${{ vars.VERA_PROJECT_ID }}
