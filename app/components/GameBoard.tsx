@@ -47,13 +47,13 @@ export default function GameBoard({
   };
 
   return (
-    <main className="min-h-screen bg-slate-950 text-emerald-400 font-mono p-4 pt-16 flex flex-col items-center w-full">
+    <main className="min-h-screen bg-theme-bg-primary text-theme-text-primary font-mono p-4 pt-16 flex flex-col items-center w-full">
       {/* Header */}
-      <header className="w-full max-w-4xl border-b-2 border-emerald-800 pb-4 mb-8 flex justify-between items-end">
+      <header className="w-full max-w-4xl border-b-2 border-theme-border-secondary pb-4 mb-8 flex justify-between items-end">
         <div>
-          <h1 className="text-4xl font-bold tracking-widest text-emerald-500">POKÉ-BATTLE</h1>
+          <h1 className="text-4xl font-bold tracking-widest text-theme-text-accent">POKÉ-BATTLE</h1>
           <div className="flex items-center gap-4">
-            <p className="text-sm text-emerald-700">{localMode ? 'Local Co-op' : 'Multiplayer Edition'}</p>
+            <p className="text-sm text-theme-text-secondary">{localMode ? 'Local Co-op' : 'Multiplayer Edition'}</p>
             {!localMode && roomCode && (
               <span className="bg-emerald-900 px-2 py-1 rounded text-xs text-white font-bold">ROOM: {roomCode}</span>
             )}
