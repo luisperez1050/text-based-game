@@ -20,12 +20,12 @@ export default defineConfig({
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
- reporter: [['html']],
-  // reporter: [['html'], ['@vera-ci/playwright-reporter',       {
-  //       // Reads from VERA_API_KEY env var by default
-  //       uploadTraces: true,
-  //       uploadVideos: true,
-  //     },]],
+
+  reporter: [['html'], ['@vera-ci/playwright-reporter',       {
+        // Reads from VERA_API_KEY env var by default
+        uploadTraces: true,
+        uploadVideos: true,
+      },]],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     // Use the Vercel URL if it exists, otherwise fallback to localhost
