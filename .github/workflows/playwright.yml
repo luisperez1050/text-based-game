@@ -4,7 +4,7 @@ on:
 jobs:
   test:
     # Only run if the deployment was successful
-    if: github.event.deployment_status.state == 'success'
+    if: github.event.deployment_status.state == 'success' && github.event.deployment_status.environment == 'Production'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
