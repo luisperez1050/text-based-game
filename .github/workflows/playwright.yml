@@ -4,7 +4,7 @@ on:
 jobs:
   test:
     # Only run if the deployment was successful
-    if: github.event.deployment_status.state == 'success' && github.event.deployment_status.environment == 'Production'
+    if: github.event.deployment_status.state == 'success'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -18,12 +18,21 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install chromium # Only install chromium as per our config
 
+      - name: Set BASE_URL based on environment
+        run: |
+          if [[ "${{ github.event.deployment_status.environment }}" == "Production" ]]; then
+            echo "BASE_URL=https://text-based-game-kohl.vercel.app" >> $GITHUB_ENV
+          else
+            echo "BASE_URL=${{ github.event.deployment_status.target_url }}" >> $GITHUB_ENV
+          fi
+
       - name: Run Playwright tests
         run: npx playwright test
         env:
-          # This pulls the actual URL Vercel just created!
-          BASE_URL: ${{ github.event.deployment_status.target_url }}
+
           # Add VERA CI environment variables
           VERA_API_KEY: ${{ secrets.VERA_API_KEY }}
           VERA_PROJECT_ID: ${{ vars.VERA_PROJECT_ID }}
           VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+          BASE_URL: ${{ env.BASE_URL }}
+          VERA_CI_BRANCH: ${{ github.ref_name }}
