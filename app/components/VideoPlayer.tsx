@@ -35,10 +35,10 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         loop={loop}
         controls={controls}
         playsInline
-        className="rounded-lg shadow-lg border-2 border-emerald-900 bg-slate-900"
+        className="rounded-lg shadow-lg border-2 border-theme-border-primary bg-theme-bg-secondary"
       >
         <source src={src} type="video/mp4" />
-        <p className="text-emerald-600 p-4">
+        <p className="text-theme-text-secondary p-4">
           Your browser does not support the video tag.
         </p>
       </video>

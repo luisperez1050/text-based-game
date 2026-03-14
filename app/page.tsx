@@ -310,34 +310,34 @@ export default function Home() {
   // 1. MENU VIEW
   if (mode === 'menu') {
     return (
-      <main className="min-h-screen bg-slate-950 text-emerald-400 font-mono p-4 flex flex-col items-center justify-center">
-        <h1 className="text-6xl font-bold tracking-widest text-emerald-500 mb-4">POKÉ-BATTLE</h1>
-        <p className="text-xl text-emerald-700 mb-12">Choose Your Game Mode</p>
+      <main className="min-h-screen bg-theme-bg-primary text-theme-text-primary font-mono p-4 flex flex-col items-center justify-center">
+        <h1 className="text-6xl font-bold tracking-widest text-theme-text-accent mb-4">POKÉ-BATTLE</h1>
+        <p className="text-xl text-theme-text-secondary mb-12">Choose Your Game Mode</p>
         
         <div className="flex flex-col md:flex-row gap-8 w-full max-w-4xl">
           {/* Local Mode */}
-          <div className="flex-1 bg-slate-900 border-2 border-emerald-900 p-8 rounded-lg flex flex-col items-center justify-between hover:border-emerald-500 transition-colors group cursor-pointer" onClick={startLocalGame}>
-            <h2 className="text-2xl font-bold mb-4 group-hover:text-emerald-300">LOCAL CO-OP</h2>
-            <p className="mb-8 text-center text-emerald-600 flex-grow">Play with a friend on the same device.</p>
-            <button className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold text-xl rounded transition-colors">
+          <div className="flex-1 bg-theme-bg-secondary border-2 border-theme-border-primary p-8 rounded-lg flex flex-col items-center justify-between hover:border-theme-text-accent transition-colors group cursor-pointer" onClick={startLocalGame}>
+            <h2 className="text-2xl font-bold mb-4 group-hover:text-theme-text-primary">LOCAL CO-OP</h2>
+            <p className="mb-8 text-center text-theme-text-secondary flex-grow">Play with a friend on the same device.</p>
+            <button className="w-full py-4 bg-theme-button-bg hover:bg-theme-button-hover-bg text-theme-button-text font-bold text-xl rounded transition-colors">
               PLAY LOCAL
             </button>
           </div>
 
           {/* Online Mode */}
-          <div className="flex-1 bg-slate-900 border-2 border-emerald-900 p-8 rounded-lg flex flex-col items-center justify-between hover:border-emerald-500 transition-colors group cursor-pointer" onClick={() => setMode('online')}>
-            <h2 className="text-2xl font-bold mb-4 group-hover:text-emerald-300">ONLINE CO-OP</h2>
-            <p className="mb-8 text-center text-emerald-600 flex-grow">Create a room and invite a remote friend.</p>
-            <button className="w-full py-4 border-2 border-emerald-600 hover:bg-emerald-600 hover:text-slate-950 text-emerald-500 font-bold text-xl rounded transition-colors">
+          <div className="flex-1 bg-theme-bg-secondary border-2 border-theme-border-primary p-8 rounded-lg flex flex-col items-center justify-between hover:border-theme-text-accent transition-colors group cursor-pointer" onClick={() => setMode('online')}>
+            <h2 className="text-2xl font-bold mb-4 group-hover:text-theme-text-primary">ONLINE CO-OP</h2>
+            <p className="mb-8 text-center text-theme-text-secondary flex-grow">Create a room and invite a remote friend.</p>
+            <button className="w-full py-4 border-2 border-theme-button-bg hover:bg-theme-button-bg hover:text-theme-button-text text-theme-text-accent font-bold text-xl rounded transition-colors">
               PLAY ONLINE
             </button>
           </div>
           
           {/* Scoreboard */}
-          <div className="flex-1 bg-slate-900 border-2 border-emerald-900 p-8 rounded-lg flex flex-col items-center justify-between hover:border-emerald-500 transition-colors group cursor-pointer" onClick={() => setMode('scoreboard')}>
-            <h2 className="text-2xl font-bold mb-4 group-hover:text-emerald-300">SCOREBOARD</h2>
-            <p className="mb-8 text-center text-emerald-600 flex-grow">View totals across sessions.</p>
-            <button className="w-full py-4 border-2 border-emerald-600 hover:bg-emerald-600 hover:text-slate-950 text-emerald-500 font-bold text-xl rounded transition-colors">
+          <div className="flex-1 bg-theme-bg-secondary border-2 border-theme-border-primary p-8 rounded-lg flex flex-col items-center justify-between hover:border-theme-text-accent transition-colors group cursor-pointer" onClick={() => setMode('scoreboard')}>
+            <h2 className="text-2xl font-bold mb-4 group-hover:text-theme-text-primary">SCOREBOARD</h2>
+            <p className="mb-8 text-center text-theme-text-secondary flex-grow">View totals across sessions.</p>
+            <button className="w-full py-4 border-2 border-theme-button-bg hover:bg-theme-button-bg hover:text-theme-button-text text-theme-text-accent font-bold text-xl rounded transition-colors">
               VIEW SCOREBOARD
             </button>
           </div>
@@ -350,7 +350,7 @@ export default function Home() {
   if (mode === 'local' && localGameState) {
     return (
       <div className="relative">
-         <button onClick={() => setMode('menu')} className="absolute top-4 left-4 z-50 text-emerald-600 hover:text-emerald-400 font-bold border border-emerald-800 px-4 py-2 rounded bg-slate-900">
+         <button onClick={() => setMode('menu')} className="absolute top-4 left-4 z-50 text-theme-text-secondary hover:text-theme-text-primary font-bold border border-theme-border-secondary px-4 py-2 rounded bg-theme-bg-secondary">
             &lt; BACK TO GAME MODE
          </button>
          <GameBoard 
@@ -374,27 +374,27 @@ export default function Home() {
     // Lobby
     if (!roomCode || !onlineGameState) {
       return (
-        <main className="min-h-screen bg-slate-950 text-emerald-400 font-mono p-4 flex flex-col items-center justify-center relative">
-          <button onClick={() => setMode('menu')} className="absolute top-4 left-4 text-emerald-600 hover:text-emerald-400 font-bold border border-emerald-800 px-4 py-2 rounded bg-slate-900">
+        <main className="min-h-screen bg-theme-bg-primary text-theme-text-primary font-mono p-4 flex flex-col items-center justify-center relative">
+          <button onClick={() => setMode('menu')} className="absolute top-4 left-4 text-theme-text-secondary hover:text-theme-text-primary font-bold border border-theme-border-secondary px-4 py-2 rounded bg-theme-bg-secondary">
             &lt; BACK TO GAME MODE
           </button>
 
-          <h1 className="text-6xl font-bold tracking-widest text-emerald-500 mb-4">ONLINE LOBBY</h1>
+          <h1 className="text-6xl font-bold tracking-widest text-theme-text-accent mb-4">ONLINE LOBBY</h1>
           
           <div className="flex flex-col md:flex-row gap-8 w-full max-w-4xl mx-auto">
             {/* Create Room */}
-            <div className="flex-1 bg-slate-900 border-2 border-emerald-900 p-8 rounded-lg flex flex-col items-center hover:border-emerald-500 transition-colors">
+            <div className="flex-1 bg-theme-bg-secondary border-2 border-theme-border-primary p-8 rounded-lg flex flex-col items-center hover:border-theme-text-accent transition-colors">
               <h2 className="text-2xl font-bold mb-4">NEW GAME</h2>
               <button 
                 onClick={createGame}
-                className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold text-xl rounded transition-colors"
+                className="w-full py-4 bg-theme-button-bg hover:bg-theme-button-hover-bg text-theme-button-text font-bold text-xl rounded transition-colors"
               >
                 CREATE ROOM
               </button>
             </div>
 
             {/* Join Room */}
-            <div className="flex-1 bg-slate-900 border-2 border-emerald-900 p-8 rounded-lg flex flex-col items-center hover:border-emerald-500 transition-colors">
+            <div className="flex-1 bg-theme-bg-secondary border-2 border-theme-border-primary p-8 rounded-lg flex flex-col items-center hover:border-theme-text-accent transition-colors">
               <h2 className="text-2xl font-bold mb-4">JOIN GAME</h2>
               <input 
                 type="text"
@@ -402,12 +402,12 @@ export default function Home() {
                 onChange={(e) => setInputCode(e.target.value.toUpperCase())}
                 placeholder="A1B2C3"
                 maxLength={6}
-                className="w-full bg-slate-950 border border-emerald-700 p-4 text-center text-2xl font-bold tracking-widest mb-4 focus:outline-none focus:border-emerald-400 rounded"
+                className="w-full bg-theme-bg-primary border border-theme-text-secondary p-4 text-center text-2xl font-bold tracking-widest mb-4 focus:outline-none focus:border-theme-text-primary rounded"
               />
               {(joinError || localJoinError) && <p className="text-red-500 mb-4">{joinError || localJoinError}</p>}
               <button 
                 onClick={handleJoinClick}
-                className="w-full py-4 border-2 border-emerald-600 hover:bg-emerald-600 hover:text-slate-950 text-emerald-500 font-bold text-xl rounded transition-colors"
+                className="w-full py-4 border-2 border-theme-button-bg hover:bg-theme-button-bg hover:text-theme-button-text text-theme-text-accent font-bold text-xl rounded transition-colors"
               >
                 JOIN ROOM
               </button>
@@ -420,7 +420,7 @@ export default function Home() {
     // Online Game
     return (
       <div className="relative">
-         <button onClick={() => { leaveGame(); setMode('menu'); }} className="absolute top-4 left-4 z-50 text-emerald-600 hover:text-emerald-400 font-bold border border-emerald-800 px-4 py-2 rounded bg-slate-900">
+         <button onClick={() => { leaveGame(); setMode('menu'); }} className="absolute top-4 left-4 z-50 text-theme-text-secondary hover:text-theme-text-primary font-bold border border-theme-border-secondary px-4 py-2 rounded bg-theme-bg-secondary">
             &lt; LEAVE GAME
          </button>
          <GameBoard 
@@ -444,16 +444,16 @@ export default function Home() {
     const sb = loadScoreboard();
     const entries = Object.entries(sb).sort((a,b) => b[1].gamesWon - a[1].gamesWon);
     return (
-      <main className="min-h-screen bg-slate-950 text-emerald-400 font-mono p-8">
-        <button onClick={() => setMode('menu')} className="mb-8 text-emerald-600 hover:text-emerald-400 font-bold border border-emerald-800 px-4 py-2 rounded bg-slate-900">
+      <main className="min-h-screen bg-theme-bg-primary text-theme-text-primary font-mono p-8">
+        <button onClick={() => setMode('menu')} className="mb-8 text-theme-text-secondary hover:text-theme-text-primary font-bold border border-theme-border-secondary px-4 py-2 rounded bg-theme-bg-secondary">
           &lt; BACK TO GAME MODE
         </button>
-        <h1 className="text-4xl font-bold mb-6 text-emerald-500">SCOREBOARD</h1>
+        <h1 className="text-4xl font-bold mb-6 text-theme-text-accent">SCOREBOARD</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {entries.map(([name, s]) => (
-            <div key={name} className="bg-slate-900 border border-emerald-800 p-4 rounded">
-              <div className="text-xl font-bold text-white mb-2">{name}</div>
-              <div className="text-sm text-emerald-400">
+            <div key={name} className="bg-theme-bg-secondary border border-theme-border-secondary p-4 rounded">
+              <div className="text-xl font-bold text-theme-text-primary mb-2">{name}</div>
+              <div className="text-sm text-theme-text-primary">
                 <div>Games Won: {s.gamesWon}</div>
                 <div>Rounds Won: {s.roundsWon}</div>
                 <div>Overkills: {s.overkills}</div>
@@ -463,7 +463,7 @@ export default function Home() {
             </div>
           ))}
           {entries.length === 0 && (
-            <div className="text-emerald-600">No games recorded yet.</div>
+            <div className="text-theme-text-secondary">No games recorded yet.</div>
           )}
         </div>
       </main>

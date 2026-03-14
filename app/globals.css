@@ -1,26 +1,50 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
+/* Map theme variables to Tailwind color utilities (required for v4) */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-theme-bg-primary: rgb(var(--theme-bg-primary));
+  --color-theme-bg-secondary: rgb(var(--theme-bg-secondary));
+  --color-theme-text-primary: rgb(var(--theme-text-primary));
+  --color-theme-text-secondary: rgb(var(--theme-text-secondary));
+  --color-theme-text-accent: rgb(var(--theme-text-accent));
+  --color-theme-border-primary: rgb(var(--theme-border-primary));
+  --color-theme-border-secondary: rgb(var(--theme-border-secondary));
+  --color-theme-button-bg: rgb(var(--theme-button-bg));
+  --color-theme-button-hover-bg: rgb(var(--theme-button-hover-bg));
+  --color-theme-button-text: rgb(var(--theme-button-text));
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Base (Emerald) Theme */
+:root {
+  --theme-bg-primary: 6 2 23; /* slate-950 */
+  --theme-bg-secondary: 15 23 42; /* slate-900 */
+  --theme-text-primary: 52 211 153; /* emerald-400 */
+  --theme-text-secondary: 5 150 105; /* emerald-600 */
+  --theme-text-accent: 34 197 94; /* emerald-500 */
+  --theme-border-primary: 20 83 45; /* emerald-900 */
+  --theme-border-secondary: 22 101 53; /* emerald-800 */
+  --theme-button-bg: 5 150 105; /* emerald-600 */
+  --theme-button-hover-bg: 16 185 129; /* emerald-500 */
+  --theme-button-text: 6 2 23; /* slate-950 */
+}
+
+/* Red Theme (Neon - mirrors Emerald structure) */
+html[data-theme="red"] {
+  --theme-bg-primary: 23 2 2; /* dark slate-950 with red tint */
+  --theme-bg-secondary: 30 8 8; /* slate-900 equivalent */
+  --theme-text-primary: 248 113 113; /* red-400 - bright neon */
+  --theme-text-secondary: 239 68 68; /* red-500 */
+  --theme-text-accent: 251 113 133; /* rose-400 - vibrant neon accent */
+  --theme-border-primary: 127 29 29; /* red-900 */
+  --theme-border-secondary: 153 27 27; /* red-800 */
+  --theme-button-bg: 239 68 68; /* red-500 */
+  --theme-button-hover-bg: 248 113 113; /* red-400 */
+  --theme-button-text: 6 2 23; /* slate-950 - dark text on bright buttons */
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  /* Apply theme background and text colors to the body */
+  background-color: rgb(var(--theme-bg-primary));
+  color: rgb(var(--theme-text-primary));
 }
