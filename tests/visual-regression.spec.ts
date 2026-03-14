@@ -7,7 +7,7 @@ test.describe('Visual Regression for Local Game', () => {
     // Click on "PLAY LOCAL" button
     await page.getByRole('button', { name: 'PLAY LOCAL' }).click();
     await expect(page.locator('main')).toContainText('ROUND 1/12');
-    await veraSnapshot(page, 'local_game_start');
+    await veraSnapshot(page, 'local-game-start');
   });
 
   test('full local game flow', async ({ page }) => {
@@ -22,7 +22,7 @@ test.describe('Visual Regression for Local Game', () => {
     // After round 1 result, click Next Round
     await page.getByRole('button', { name: 'Next Round >' }).click();
     await expect(page.locator('main')).toContainText('ROUND 2/12');
-    await veraSnapshot(page, 'round_2_start');
+    await veraSnapshot(page, 'round-2-start');
 
     // Let's play a few more rounds programmatically
     for (let i = 2; i <= 3; i++) {
@@ -37,14 +37,14 @@ test.describe('Visual Regression for Local Game', () => {
       // Click Next Round
       await page.getByRole('button', { name: 'Next Round >' }).click();
       await expect(page.locator('main')).toContainText(`ROUND ${i + 1}/12`);
-      await veraSnapshot(page, `round_${i + 1}_start`);
+      await veraSnapshot(page, `round-${i + 1}-start`);
     }
 
     // Simulate game end (fast forward to last round if possible, or just play through)
     // For simplicity, let's just go back to game mode and check the scoreboard
     await page.getByRole('button', { name: '< BACK TO GAME MODE' }).click();
     await expect(page.locator('main')).toContainText('Choose Your Game Mode');
-    await veraSnapshot(page, 'back_to_game_mode_after_game');
+    await veraSnapshot(page, 'back-to-game-mode-after-game');
 
   });
 
@@ -55,14 +55,14 @@ test.describe('Visual Regression for Online Game', () => {
     // Click on "PLAY ONLINE" button
     await page.getByRole('button', { name: 'PLAY ONLINE' }).click();
     await expect(page.locator('main')).toContainText('ONLINE LOBBY');
-    await veraSnapshot(page, 'online_lobby');
+    await veraSnapshot(page, 'online-lobby');
   });
 
   test('create online room', async ({ page }) => {
     await page.getByRole('button', { name: 'CREATE ROOM' }).click();
     // Expect to see the "WAITING FOR PLAYERS..." message
     await expect(page.locator('div.animate-pulse').filter({ hasText: 'WAITING FOR PLAYERS...' })).toBeVisible();
-    await veraSnapshot(page, 'online_room_created');
+    await veraSnapshot(page, 'online-room-created');
   });
 });
 
@@ -107,6 +107,8 @@ test.describe('Visual Regression for Scoreboard', () => {
     // View scoreboard
     await page.getByRole('button', { name: 'VIEW SCOREBOARD' }).click();
     await expect(page.locator('main')).toContainText('SCOREBOARD');
-    await veraSnapshot(page, 'scoreboard_view');
+    await veraSnapshot(page, 'scoreboard-view', {
+      fullPage: true,
+    });
   });
 });

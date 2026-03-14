@@ -21,7 +21,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
 
-  reporter: [['html'], ['@vera-ci/playwright-reporter',       {
+  reporter: [['html', { open: "never" }], ['@vera-ci/playwright-reporter',       {
         // Reads from VERA_API_KEY env var by default
         uploadTraces: true,
         uploadVideos: true,
