@@ -49,7 +49,7 @@ export default function GameBoard({
   return (
     <main className="min-h-screen bg-theme-bg-primary text-theme-text-primary font-mono p-4 pt-16 flex flex-col items-center w-full">
       {/* Header */}
-      <header className="w-full max-w-4xl border-b-2 border-theme-border-secondary pb-4 mb-8 flex justify-between items-end">
+      <header className="w-full max-w-4xl border-b-2 border-theme-border-secondary pb-4 mb-8 flex flex-col sm:flex-row sm:justify-between gap-4 sm:gap-6 items-start sm:items-end">
         <div>
           <h1 className="text-4xl font-bold tracking-widest text-theme-text-accent">POKÉ-BATTLE</h1>
           <div className="flex items-center gap-4">
