@@ -25,5 +25,5 @@ jobs:
           BASE_URL: ${{ github.event.deployment_status.target_url }}
           # Add VERA CI environment variables
           VERA_API_KEY: ${{ secrets.VERA_API_KEY }}
-          VERA_PROJECT_ID: ${{ secrets.VERA_PROJECT_ID }}
+          VERA_PROJECT_ID: ${{ vars.VERA_PROJECT_ID }}
           VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
