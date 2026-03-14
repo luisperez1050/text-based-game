@@ -1,5 +1,19 @@
 @import "tailwindcss";
 
+/* Map theme variables to Tailwind color utilities (required for v4) */
+@theme inline {
+  --color-theme-bg-primary: rgb(var(--theme-bg-primary));
+  --color-theme-bg-secondary: rgb(var(--theme-bg-secondary));
+  --color-theme-text-primary: rgb(var(--theme-text-primary));
+  --color-theme-text-secondary: rgb(var(--theme-text-secondary));
+  --color-theme-text-accent: rgb(var(--theme-text-accent));
+  --color-theme-border-primary: rgb(var(--theme-border-primary));
+  --color-theme-border-secondary: rgb(var(--theme-border-secondary));
+  --color-theme-button-bg: rgb(var(--theme-button-bg));
+  --color-theme-button-hover-bg: rgb(var(--theme-button-hover-bg));
+  --color-theme-button-text: rgb(var(--theme-button-text));
+}
+
 /* Base (Emerald) Theme */
 :root {
   --theme-bg-primary: 6 2 23; /* slate-950 */
