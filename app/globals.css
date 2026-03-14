@@ -14,18 +14,18 @@
   --theme-button-text: 6 2 23; /* slate-950 */
 }
 
-/* Red Theme */
+/* Red Theme (Neon - mirrors Emerald structure) */
 html[data-theme="red"] {
-  --theme-bg-primary: 20 2 2; /* Darker red */
-  --theme-bg-secondary: 30 5 5; /* Slightly lighter red */
-  --theme-text-primary: 252 165 165; /* red-300 */
+  --theme-bg-primary: 23 2 2; /* dark slate-950 with red tint */
+  --theme-bg-secondary: 30 8 8; /* slate-900 equivalent */
+  --theme-text-primary: 248 113 113; /* red-400 - bright neon */
   --theme-text-secondary: 239 68 68; /* red-500 */
-  --theme-text-accent: 220 38 38; /* red-600 */
-  --theme-border-primary: 153 27 27; /* red-800 */
-  --theme-border-secondary: 185 28 28; /* red-700 */
-  --theme-button-bg: 220 38 38; /* red-600 */
-  --theme-button-hover-bg: 239 68 68; /* red-500 */
-  --theme-button-text: 255 255 255; /* white */
+  --theme-text-accent: 251 113 133; /* rose-400 - vibrant neon accent */
+  --theme-border-primary: 127 29 29; /* red-900 */
+  --theme-border-secondary: 153 27 27; /* red-800 */
+  --theme-button-bg: 239 68 68; /* red-500 */
+  --theme-button-hover-bg: 248 113 113; /* red-400 */
+  --theme-button-text: 6 2 23; /* slate-950 - dark text on bright buttons */
 }
 
 body {

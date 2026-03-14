@@ -13,6 +13,7 @@ const config: Config = {
         'theme-bg-secondary': 'rgb(var(--theme-bg-secondary) / <alpha-value>)',
         'theme-text-primary': 'rgb(var(--theme-text-primary) / <alpha-value>)',
         'theme-text-secondary': 'rgb(var(--theme-text-secondary) / <alpha-value>)',
+        'theme-text-accent': 'rgb(var(--theme-text-accent) / <alpha-value>)',
         'theme-border-primary': 'rgb(var(--theme-border-primary) / <alpha-value>)',
         'theme-border-secondary': 'rgb(var(--theme-border-secondary) / <alpha-value>)',
         'theme-button-bg': 'rgb(var(--theme-button-bg) / <alpha-value>)',

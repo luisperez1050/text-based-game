@@ -328,7 +328,7 @@ export default function Home() {
           <div className="flex-1 bg-theme-bg-secondary border-2 border-theme-border-primary p-8 rounded-lg flex flex-col items-center justify-between hover:border-theme-text-accent transition-colors group cursor-pointer" onClick={() => setMode('online')}>
             <h2 className="text-2xl font-bold mb-4 group-hover:text-theme-text-primary">ONLINE CO-OP</h2>
             <p className="mb-8 text-center text-theme-text-secondary flex-grow">Create a room and invite a remote friend.</p>
-            <button className="w-full py-4 border-2 border-button-bg hover:bg-theme-button-bg hover:text-theme-button-text text-theme-text-accent font-bold text-xl rounded transition-colors">
+            <button className="w-full py-4 border-2 border-theme-button-bg hover:bg-theme-button-bg hover:text-theme-button-text text-theme-text-accent font-bold text-xl rounded transition-colors">
               PLAY ONLINE
             </button>
           </div>
