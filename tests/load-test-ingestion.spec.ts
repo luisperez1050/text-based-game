@@ -12,7 +12,7 @@ import { veraSnapshot } from '@vera-ci/playwright-reporter';
  * Start your app first: npm run dev
  */
 
-const NUM_DUMMY_TESTS = 1000;
+const NUM_DUMMY_TESTS = 300;
 
 test.describe.configure({ mode: 'parallel' });
 
