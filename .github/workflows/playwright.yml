@@ -27,7 +27,7 @@ jobs:
           fi
 
       - name: Run Playwright tests (excluding visual regression)
-        run: npx playwright test --ignore 'tests/visual-regression.spec.ts'
+        run: npx playwright test --grep-invert "visual-regression.spec.ts"
         env:
 
           # Add VERA CI environment variables
