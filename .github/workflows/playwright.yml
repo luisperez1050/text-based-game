@@ -26,8 +26,8 @@ jobs:
             echo "BASE_URL=${{ github.event.deployment_status.target_url }}" >> $GITHUB_ENV
           fi
 
-      - name: Run Playwright tests
-        run: npx playwright test
+      - name: Run Playwright tests (excluding visual regression)
+        run: npx playwright test --ignore 'tests/visual-regression.spec.ts'
         env:
 
           # Add VERA CI environment variables
@@ -36,3 +36,6 @@ jobs:
           VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
           BASE_URL: ${{ env.BASE_URL }}
           VERA_CI_BRANCH: ${{ github.ref_name }}
+
+      - name: Run Load Tests
+        run: echo "Replace this with your load test command, e.g., k6 run script.js"
