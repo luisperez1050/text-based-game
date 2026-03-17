@@ -18,7 +18,6 @@ test.describe.configure({ mode: 'parallel' });
 
 for (let i = 0; i < NUM_DUMMY_TESTS; i++) {
   test(`dummy-#${i}`, async ({ page }) => {
-    test.skip(!!process.env.CI, 'Load test - run locally with npm run test:load-ingestion');
     await page.goto('/');
     await veraSnapshot(page, `load-test-ingestion-${i}`);
   });
