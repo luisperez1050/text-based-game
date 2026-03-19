@@ -37,5 +37,3 @@ jobs:
           BASE_URL: ${{ env.BASE_URL }}
           VERA_CI_BRANCH: ${{ github.ref_name }}
 
-      - name: Run Load Tests
-        run: echo "Replace this with your load test command, e.g., k6 run script.js"
