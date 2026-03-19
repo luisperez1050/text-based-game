@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test": "playwright test",
+    "test:load-ingestion": "playwright test tests/load-test-ingestion.spec.ts --workers=32",
     "postinstall": "npx playwright install chromium",
     "ci:build-and-test": "npm run build && npm run test"
 
